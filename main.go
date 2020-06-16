@@ -1,8 +1,6 @@
-/*
-Web server to be used for serving a single mix update folder.
-Will automatically get a lets encrypt certificate, and use
-that to provide https transport for the domain.
-*/
+// Web server to be used for serving a single mix update folder.
+// Will automatically get a lets encrypt certificate, and use
+// that to provide https transport for the domain.
 
 package main
 
@@ -22,13 +20,9 @@ func main() {
 
 	flag.Parse()
 
-	//create a file server, and serve the files found in ./
+	// Create a file server, and serve the files given by the -dir flag
 	fd := http.FileServer(http.Dir(*dir))
 	http.Handle("/", fd)
-
-	// Get certificates and start https
-	certmagic.DefaultACME.Agreed = true
-	certmagic.DefaultACME.Email = "postmannen@gmail.com"
 
 	switch *url {
 	case "":
@@ -41,6 +35,10 @@ func main() {
 		log.Println("You need to specify a mail address using the -mail flag")
 		return
 	}
+
+	// Get certificates and start https
+	certmagic.DefaultACME.Agreed = true
+	certmagic.DefaultACME.Email = *mail
 
 	switch *prod {
 	case true:
