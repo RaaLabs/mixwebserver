@@ -7,7 +7,9 @@ package main
 import (
 	"flag"
 	"log"
+	"net"
 	"net/http"
+	"time"
 
 	"github.com/caddyserver/certmagic"
 )
@@ -17,6 +19,7 @@ func main() {
 	prod := flag.Bool("prod", false, "set to true if you want a real and signed certificate, and are done with testing")
 	url := flag.String("url", "", "Enter the url for your domain")
 	mail := flag.String("mail", "", "The mail address to use when registering domain for letsencrypt cert")
+	readTimeout := flag.Int("readTimeout", 120, "the number of minutes for the http request timeout")
 
 	flag.Parse()
 
@@ -56,9 +59,32 @@ func main() {
 		certmagic.DefaultACME.CA = certmagic.LetsEncryptStagingCA
 	}
 
-	err := certmagic.HTTPS([]string{*url}, nil)
+	httpLn, err := net.Listen("tcp", ":80")
 	if err != nil {
-		log.Println("--- error: certmagic.HTTPS failed: ", err)
-		return
+		log.Printf("error: certmagic.Listen http failed: %v ", err)
 	}
+
+	httpConf := http.Server{
+		ReadTimeout: time.Duration(*readTimeout) * time.Minute,
+		Handler:     nil,
+		Addr:        ":80",
+	}
+
+	go httpConf.Serve(httpLn)
+
+	httpsLn, err := certmagic.Listen([]string{*url})
+	if err != nil {
+		log.Printf("error: certmagic.Listen https failed: %v ", err)
+	}
+
+	httpsConf := http.Server{
+		ReadTimeout: 2 * time.Minute,
+		Handler:     nil,
+		Addr:        ":443",
+	}
+
+	if err := httpsConf.Serve(httpsLn); err != nil {
+		log.Printf("error: httpsConf.Serve failed: %v ", err)
+	}
+
 }
