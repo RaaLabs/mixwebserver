@@ -6,11 +6,11 @@ The binary "mixwebserver" are compiled for use on Linux amd64 platform.
 
 ```text
   -dir3rdParty string
-        specify the full path to the folder to serve as 3rd-party repository (default "./3rd-party")
+        specify the full path to the update folder to serve as 3rd-party repository
   -mail string
         The mail address to use when registering domain for letsencrypt cert
-  -path string
-        enter the full path of the directory to serve via https (default "./")
+  -dirMain string
+        enter the full path of the main mix  update directory to serve via https
   -prod
         set to true if you want a real and signed certificate, and are done with testing
   -readTimeout int
