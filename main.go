@@ -15,8 +15,8 @@ import (
 )
 
 func main() {
-	dir := flag.String("path", "./", "enter the full path of the directory to serve via https")
-	dir3rdParty := flag.String("dir3rdParty", "./3rd-party", "specify the full path to the folder to serve as 3rd-party repository")
+	dir := flag.String("dirMain", "./", "enter the full path of the main mix  update directory to serve via https")
+	dir3rdParty := flag.String("dir3rdParty", "./3rd-party", "specify the full path to the update folder to serve as 3rd-party repository")
 	prod := flag.Bool("prod", false, "set to true if you want a real and signed certificate, and are done with testing")
 	url := flag.String("url", "", "Enter the url for your domain")
 	mail := flag.String("mail", "", "The mail address to use when registering domain for letsencrypt cert")
@@ -26,11 +26,11 @@ func main() {
 
 	// Create a file server, and serve the main mix files given by the -dir flag
 	fd := http.FileServer(http.Dir(*dir))
-	http.Handle("/", fd)
+	http.Handle("/", http.StripPrefix("/", fd))
 
 	// Create a file server for the 3rd-party repository files
 	fd3rdParty := http.FileServer(http.Dir(*dir3rdParty))
-	http.Handle("/3rd-party", fd3rdParty)
+	http.Handle("/3rd-party/", http.StripPrefix("/3rd-party/", fd3rdParty))
 
 	switch *url {
 	case "":
